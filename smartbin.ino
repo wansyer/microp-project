@@ -50,7 +50,7 @@ void loop() {
   }
 
   // print the analog value:
-  Serial.println(analogValue);
+  Serial.println(fsrReading);
   delay(100);        // delay in between reads for stability
 }
 
