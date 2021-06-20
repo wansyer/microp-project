@@ -1,62 +1,32 @@
-#include <Servo.h>
-
-Servo myservo;  // create servo object to control a servo
-// twelve servo objects can be created on most boards
-
-const int pingPin = 7;  // wansyer wuz here
-int pos = 0;    // variable to store the servo position
+const int fsrAnalogPin = A0;    // pin for sensor
+const int ledGreen = 13;       // pin for Green LED
+const int ledRed = 12;       // pin for Red LED
+const int threshold = 300;   // an arbitrary threshold level that's in the range of the analog input
 
 void setup() {
-  // initialize serial communication:
+  // initialize the LED pin as an output:
+  pinMode(ledGreen, OUTPUT);
+  pinMode(ledRed, OUTPUT);
+  // initialize serial communications:
   Serial.begin(9600);
-  myservo.attach(9);
 }
 
 void loop() {
-  // establish variables for duration of the ping, and the distance result
-  // in inches and centimeters:
-  long duration, inches, cm;
+  int fsrReading = analogRead(fsrAnalogPin);
+  Serial.print("Analog reading = ");
+  Serial.println(fsrReading);
 
-  // The PING))) is triggered by a HIGH pulse of 2 or more microseconds.
-  // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
-  pinMode(pingPin, OUTPUT);
-  digitalWrite(pingPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(pingPin, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(pingPin, LOW);
+  // if the distance is less than 3 meter, Green LED is ON
+  if (fsrReading < threshold) {
+    digitalWrite(ledGreen, HIGH);
+    // insert another set of instructions below
+    
 
-  // The same pin is used to read the signal from the PING))): a HIGH pulse
-  // whose duration is the time (in microseconds) from the sending of the ping
-  // to the reception of its echo off of an object.
-  pinMode(pingPin, INPUT);
-  duration = pulseIn(pingPin, HIGH);
+  } else {
+    digitalWrite(ledRed, HIGH);
+  }
 
-  // convert the time into a distance
-  inches = microsecondsToInches(duration);
-  cm = microsecondsToCentimeters(duration);
-
-  Serial.print(inches);
-  Serial.print("in, ");
-  Serial.print(cm);
-  Serial.print("cm");
-  Serial.println();
-
-  delay(100);
-}
-
-long microsecondsToInches(long microseconds) {
-  // According to Parallax's datasheet for the PING))), there are 73.746
-  // microseconds per inch (i.e. sound travels at 1130 feet per second).
-  // This gives the distance travelled by the ping, outbound and return,
-  // so we divide by 2 to get the distance of the obstacle.
-  // See: https://www.parallax.com/package/ping-ultrasonic-distance-sensor-downloads/
-  return microseconds / 74 / 2;
-}
-
-long microsecondsToCentimeters(long microseconds) {
-  // The speed of sound is 340 m/s or 29 microseconds per centimeter.
-  // The ping travels out and back, so to find the distance of the object we
-  // take half of the distance travelled.
-  return microseconds / 29 / 2;
+  // print the analog value:
+  Serial.println(analogValue);
+  delay(100);        // delay in between reads for stability
 }
