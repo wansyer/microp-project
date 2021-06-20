@@ -1,4 +1,5 @@
 const int fsrAnalogPin = A0;    // pin for sensor
+const int transistor = 2;
 const int ledGreen = 13;       // pin for Green LED
 const int ledRed = 12;       // pin for Red LED
 const int threshold = 300;   // an arbitrary threshold level that's in the range of the analog input
@@ -7,6 +8,7 @@ void setup() {
   // initialize the LED pin as an output:
   pinMode(ledGreen, OUTPUT);
   pinMode(ledRed, OUTPUT);
+  pinMode (transistor, OUTPUT)
   // initialize serial communications:
   Serial.begin(9600);
 }
@@ -23,7 +25,11 @@ void loop() {
     
 
   } else {
-    digitalWrite(ledRed, HIGH);
+    digitalWrite (transistor, HIGH);
+    delay(500);
+    digitalWrite (transistor, LOW);
+    delay(500);
+    
   }
 
   // print the analog value:
