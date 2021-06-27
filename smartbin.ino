@@ -12,6 +12,7 @@ int ledYellow = 11;
 int ledRed = 13;
 const int Minimum = 4.905;
 const int Maximum = 9.81;
+const int Threshold = 9.00;
 int fsrVoltage; 
 unsigned long fsrResistance;
 unsigned long fsrConductance;
@@ -104,7 +105,27 @@ if (100 < cm && cm < 300){
 }
 else if (0 < cm && cm < 100)
     {
-        if (fsrForce < Maximum) 
+      myservo.write(0);
+    fsrReading = analogRead(fsrAnalogPin);
+    fsrVoltage = map(fsrReading, 0, 1023, 0, 5000);
+		if (fsrVoltage == 0){
+        Serial.println("No pressure");  
+        }
+        else {       
+        fsrResistance = 5000 - fsrVoltage;     // fsrVoltage is in millivolts so 5V = 5000mV
+        fsrResistance *= 10000;                // 10K resistor
+        fsrResistance /= fsrVoltage;
+        fsrConductance = 1000000;           // we measure in micromhos so 
+        fsrConductance /= fsrResistance;
+        Serial.print("Conductance in microMhos: ");
+        Serial.println(fsrConductance);
+        if (fsrConductance <= 1000)
+        {
+        fsrForce = fsrConductance / 80;
+        Serial.print("Force in Newtons: ");
+        Serial.println(fsrForce);}
+        }
+        if (fsrForce < Threshold) 
         {
             digitalWrite(ledYellow, LOW);
             digitalWrite(ledRed, LOW);
@@ -113,10 +134,11 @@ else if (0 < cm && cm < 100)
             myservo.write(90);
             delay(5000);
             myservo.write(0);
-            delay(1000);
+            delay(1500);
         }
-        else
+        else if (fsrForce > Threshold)
         {
+          myservo.write(0);
             digitalWrite(ledGreen, LOW);
             digitalWrite(ledYellow, LOW);
             digitalWrite(ledRed, HIGH);
@@ -125,7 +147,6 @@ else if (0 < cm && cm < 100)
             digitalWrite(ledRed, HIGH);
             delay(1000);
             digitalWrite(ledRed, LOW);
-            myservo.write(0);
         }
     }
     else{
