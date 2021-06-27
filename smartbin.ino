@@ -1,38 +1,117 @@
-const int fsrAnalogPin = A0;    // pin for sensor
-const int transistor = 2;
-const int ledGreen = 13;       // pin for Green LED
-const int ledRed = 12;       // pin for Red LED
-const int threshold = 300;   // an arbitrary threshold level that's in the range of the analog input
+#include <Servo.h>
 
-void setup() {
-  // initialize the LED pin as an output:
+Servo servo_9;
+const int fsrAnalogPin = A0;   
+int fsrReading = 0;
+const int pingPin = 7;
+int ledGreen = 11;
+int ledYellow = 12;
+int ledRed = 13;
+int Minimum = 5;
+int Maximum = 10;
+
+void setup() 
+{
   pinMode(ledGreen, OUTPUT);
   pinMode(ledRed, OUTPUT);
-  pinMode (transistor, OUTPUT)
-  // initialize serial communications:
+  pinMode(ledYellow, OUTPUT);
+  servo_9.attach(9); 
+  pinMode(fsrAnalogPin, INPUT);
   Serial.begin(9600);
 }
 
-void loop() {
-  int fsrReading = analogRead(fsrAnalogPin);
-  Serial.print("Analog reading = ");
-  Serial.println(fsrReading);
-
-  // if the distance is less than 3 meter, Green LED is ON
-  if (fsrReading < threshold) {
-    digitalWrite(ledGreen, HIGH);
-    // insert another set of instructions below
+void loop() 
+{
+    long duration, inches, cm;                      // Initialize FSR
+    int fsrReading = analogRead(fsrAnalogPin); 
+    Serial.print("Analog reading = ");
+    Serial.println(fsrReading);
+    
+    pinMode(pingPin, OUTPUT);`                      // Initialize UDS
+    digitalWrite(pingPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(pingPin, HIGH);
+    delayMicroseconds(5);
+    digitalWrite(pingPin, LOW);
     
 
-  } else {
-    digitalWrite (transistor, HIGH);
-    delay(500);
-    digitalWrite (transistor, LOW);
-    delay(500);
+    pinMode(pingPin, INPUT);
+    duration = pulseIn(pingPin, HIGH);
     
-  }
+    //convert the time into a distance
+    cm = microsecondsToCentimeters(duration);
+    Serial.print(cm);
+    Serial.print("cm");
+    Serial.println();
 
-  // print the analog value:
-  Serial.println(analogValue);
-  delay(100);        // delay in between reads for stability
+    if (100 < cm && cm < 300)
+    {
+        if (fsrReading < Minimum) 
+        {
+            digitalWrite(ledYellow, LOW);
+            digitalWrite(ledRed, LOW);
+            digitalWrite(ledGreen, HIGH);
+            delay(3000);
+            digitalWrite(ledGreen, LOW);
+        }
+        else if (Minimum < fsrReading && fsrReading < Maximum) 
+        {
+            digitalWrite(ledGreen, LOW);
+            digitalWrite(ledRed, LOW);
+            digitalWrite(ledYellow, HIGH);
+            delay(3000);
+            digitalWrite(ledYellow, LOW);
+        }
+        else if (fsrReading > Maximum) 
+        {
+            digitalWrite(ledYellow, LOW);
+            digitalWrite(ledGreen, LOW);
+            digitalWrite(ledRed, HIGH);
+            delay(3000);
+            digitalWrite(ledRed, LOW);
+        }
+    }
+    else if (0 < cm && cm < 100)
+    {
+        if (fsrReading < Maximum) 
+        {
+            digitalWrite(ledYellow, LOW);
+            digitalWrite(ledRed, LOW);
+            digitalWrite(ledGreen, LOW);
+            
+            for (angle = 0; angle <= 90; angle += 1) 
+            {
+                myservo.write(angle);
+                delay(15);
+            }
+            delay(5000);
+            for (angle = 90; angle >= 0; angle -= 1) 
+            {
+                myservo.write(angle);
+                delay(30);
+            }
+            delay(7000);
+        }
+        else
+        {
+            digitalWrite(ledGreen, LOW);
+            digitalWrite(ledYellow, LOW);
+            digitalWrite(ledRed, HIGH);
+            delay(1000);
+            digitalWrite(ledRed, LOW);
+            digitalWrite(ledRed, HIGH);
+            delay(1000);
+            digitalWrite(ledRed, LOW);
+            myservo.write(0);
+        }
+    }
+{
+break;
+}
+Serial.println(analogValue);
+delay(100);
+}
+
+long microsecondsToCentimeters(long microseconds) {
+  return microseconds / 29 / 2;
 }
